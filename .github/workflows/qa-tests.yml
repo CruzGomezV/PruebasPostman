@@ -5,10 +5,22 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Permite correrlo manualmente desde GitHub
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   test-api:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
     steps:
@@ -20,24 +32,27 @@ jobs:
         with:
           node-version: 24
 
-      - name: Instalar Newman y el generador de reportes
+      - name: Instalar Newman y reporter
         run: |
           npm install -g newman newman-reporter-htmlextra
 
-      - name: Crear carpeta para reportes
+      - name: Crear carpeta de reportes
         run: mkdir -p reports
 
       - name: Ejecutar pruebas de Postman
         run: |
           newman run qa_suite.json \
-            -e qa_environment.json \
             -r cli,htmlextra \
-            --reporter-htmlextra-export reports/reporte_qa.html \
+            --reporter-htmlextra-export reports/index.html \
             --reporter-htmlextra-title "Reporte QA Reqres API"
 
-      - name: Subir reporte visual como artefacto
+      - name: Subir artefacto para Pages
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: reporte-qa-html
-          path: reports/reporte_qa.html
+          path: reports/
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        if: always()
+        uses: actions/deploy-pages@v4
