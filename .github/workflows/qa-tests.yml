@@ -1,0 +1,43 @@
+name: QA API Automation Suite
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Permite correrlo manualmente desde GitHub
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar Newman y el generador de reportes
+        run: |
+          npm install -g newman newman-reporter-htmlextra
+
+      - name: Crear carpeta para reportes
+        run: mkdir -p reports
+
+      - name: Ejecutar pruebas de Postman
+        run: |
+          newman run qa_suite.json \
+            -e qa_environment.json \
+            -r cli,htmlextra \
+            --reporter-htmlextra-export reports/reporte_qa.html \
+            --reporter-htmlextra-title "Reporte QA Reqres API"
+
+      - name: Subir reporte visual como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-qa-html
+          path: reports/reporte_qa.html

@@ -1,0 +1,62 @@
+{
+  "info": {
+    "_postman_id": "38588ae1-f4ed-4f32-be23-71a8bc3415c2",
+    "name": "QA_Suite_Reqres",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "36390115"
+  },
+  "item": [
+    {
+      "name": "Crear Usuario QA",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// 1. Validar status code de creación exitosa (201)\npm.test(\"Status code es 201 Created\", function () {\n    pm.response.to.have.status(201);\n});\n\n// 2. Validar que la respuesta contenga los campos esperados\npm.test(\"Validar contrato y datos recibidos\", function () {\n    const res = pm.response.json();\n    \n    pm.expect(res).to.have.property(\"id\");\n    pm.expect(res.name).to.eql(\"Jose Gomez\");\n    pm.expect(res.job).to.eql(\"QA Automation Engineer\");\n    \n    // Guardar el ID de forma dinámica en el entorno para peticiones posteriores\n    pm.environment.set(\"userId\", res.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Jose Gomez\",\n  \"job\": \"QA Automation Engineer\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
+    }
+  ]
+}
